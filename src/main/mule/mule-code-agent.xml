@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:mcp="http://www.mulesoft.org/schema/mule/mcp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mcp http://www.mulesoft.org/schema/mule/mcp/current/mule-mcp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4f2dc36c-bde3-4dd6-bd3c-cfd676c83887" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<mcp:server-config name="Cod_eAgent_MCP_Server" doc:name="MCP Server" 
+	 doc:id="652dc850-3ee8-440c-92bb-185bb6f0e4e2"
+	 serverName="Code Agent Weather MCP Server" serverVersion="1.0.0" >
+		<mcp:streamable-http-server-connection listenerConfig="HTTP_Listener_config" mcpEndpointPath="/mulecodeagent/mcp" >
+			<mcp:default-response-headers >
+				<mcp:default-response-header key="X-API-Version" value="1.0.0" />
+				<mcp:default-response-header key="X-Service-Type" value="mulecodeagent" />
+			</mcp:default-response-headers>
+		</mcp:streamable-http-server-connection>
+	</mcp:server-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="241a83d1-574f-4e7a-ac46-65a273abc3d7" >
+		<http:listener-connection host="0.0.0.0" port="8090" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_Claud_API" doc:name="HTTP Request configuration" doc:id="5edbbcd9-d978-4f33-8923-687d68aaae3e">
+		<http:request-connection protocol="HTTPS" host="api.anthropic.com" connectionIdleTimeout="500000">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+	<!-- [STUDIO:"mule-code-agentFlow"]<flow name="mule-code-agentFlow" doc:id="730ac7c1-7230-4e82-bf79-1d4fc8fd46f0" >
+		<http:listener doc:name="Listener" doc:id="efe96b3f-ee71-4312-90ee-afb37d38bb4a" config-ref="HTTP_Listener_config1" path="/test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="386e519a-4359-49ee-9321-6b786ef31bad" message="#[payload.prompt&#93;"/>
+		<http:request method="POST" doc:name="Request" doc:id="665e74ad-bf73-42f6-aac2-4d592c03f53c" config-ref="HTTP_Request_Claud_API" path="/v1/messages" responseTimeout="500000">
+			<http:body ><![CDATA[#[{
+   model:"claude-sonnet-5",
+   max_tokens:4000,
+   messages:[
+      {
+        role:"user",
+        content:payload.prompt
+      }
+   &#93;
+}&#93;&#93;&#93;></http:body>
+			<http:headers ><![CDATA[#[{
+"x-api-key": "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",
+"anthropic-version":"2023-06-01",
+"content-type":"application/json"
+}&#93;&#93;&#93;></http:headers>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d2ad9e8f-286a-48aa-a5aa-905ea191e3bf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output applicaiton/json
+&#45;&#45;-
+//read(payload.content[0&#93;.text, "application/yaml")
+read(payload.^raw, "application/yaml")
+&#93;&#93;></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a166e622-27f4-4280-ae1c-8993ce596454" message='#[payload&#93;'/>
+	</flow> [STUDIO] -->
+	<sub-flow name="mule-code-agentSub_Flow" doc:id="eddc9bec-f4d1-4577-b1f9-7bae52e3f8c0" >
+		<http:request method="POST" doc:name="Request" doc:id="d4f37316-e4b1-470e-b49f-df137eeba3a0" config-ref="HTTP_Request_Claud_API" path="/v1/messages" responseTimeout="500000">
+			<http:headers><![CDATA[#[{
+"x-api-key": "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",
+"anthropic-version":"2023-06-01" 
+//"content-type":"application/json"
+}]]]></http:headers>
+		</http:request>
+	</sub-flow>
+	<flow name="generat-raml-spec" doc:id="17e30a04-2cef-4eb6-a4bd-334f11144b31" >
+		<mcp:tool-listener doc:name="create_api_spec" doc:id="2d871819-8308-421a-88cf-c7e85a41d609" config-ref="Cod_eAgent_MCP_Server" name="create_api_spec">
+			<mcp:description ><![CDATA[Uses AI to generate a RAML or OAS API specification from a natural language prompt.]]></mcp:description>
+			<mcp:parameters-schema ><![CDATA[{
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "Detailed description of the API endpoints, methods, parameters, and responses."
+      },
+      "language": {
+        "type": "string",
+        "enum": ["RAML 1.0", "OAS 3.0 (YAML)", "OAS 3.0 (JSON)"],
+        "default": "RAML 1.0"
+      },
+      "title": {
+        "type": "string",
+        "description": "The title of the API"
+      }
+    },
+    "required": ["prompt", "title"]
+  }]]></mcp:parameters-schema>
+			<mcp:responses >
+				<mcp:text-tool-response-content text="#[payload.^raw]" />
+			</mcp:responses>
+		</mcp:tool-listener>
+		<logger level="INFO" doc:name="Logger" doc:id="82b7fd73-cbaa-4ce5-8a60-17c54c4849f8" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="1f665f20-c335-4d25-a48b-95121e7d1950" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output applicaion/json
+---
+{
+   model:"claude-sonnet-5",
+   max_tokens:4000,
+   messages:[
+      {
+        role:"user",
+        content:payload.prompt
+      }
+   ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="claud API" doc:id="392d898b-5807-47e4-9686-ca10d8098571" name="mule-code-agentSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="05c0d337-eeec-465a-b55b-243b0e6ea6f5" message="#[payload]"/>
+		<!-- [STUDIO:"Flow Reference"]<flow-ref doc:name="Flow Reference" doc:id="f052a1f0-78f9-4da1-9c8e-d5fcd2608349" name="mule-code-agentSub_Flow"/> [STUDIO] -->
+	</flow>
+	<!-- [STUDIO:"mule-code-agentFlow1"]<flow name="mule-code-agentFlow1" doc:id="0e8ee091-026d-412c-a923-b8e6784e4726" >
+		<mcp:tool-listener doc:name="MCP Server - Tool Listener" doc:id="01dd8ab5-64e3-4679-8f18-d456401b322a" config-ref="Cod_eAgent_MCP_Server" name="data"/>
+	</flow> [STUDIO] -->
+</mule>
