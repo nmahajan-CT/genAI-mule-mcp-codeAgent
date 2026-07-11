@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="mule-code-agentSub_Flow" doc:id="5d7aedcc-e363-4e25-9185-f876632f4219" >
+		<try doc:name="Try" doc:id="115a88a5-471c-42c1-9b86-31cf22115967" >
+			<http:request method="POST" doc:name="Claude API Request" doc:id="33cc7aa9-e877-4350-97ab-ef86414e6158" path="/v1/messages" responseTimeout="500000" config-ref="HTTP_Request_Claud_API">
+			<http:headers><![CDATA[#[{
+"x-api-key": "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",
+"anthropic-version":"2023-06-01" 
+//"content-type":"application/json"
+}]]]></http:headers>
+		</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3e96f01e-72d0-43c3-ad63-4fdbdf334953" >
+					<logger level="INFO" doc:name="Claude API Error Logger" doc:id="eead442a-af81-4341-b56c-3c2f95b94e60" message='#["Exception occured in Claude API flow..."]'/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

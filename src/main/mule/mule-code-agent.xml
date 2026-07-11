@@ -7,29 +7,6 @@ http://www.mulesoft.org/schema/mule/mcp http://www.mulesoft.org/schema/mule/mcp/
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4f2dc36c-bde3-4dd6-bd3c-cfd676c83887" >
-		<http:listener-connection host="0.0.0.0" port="8081" />
-	</http:listener-config>
-	<mcp:server-config name="Cod_eAgent_MCP_Server" doc:name="MCP Server" 
-	 doc:id="652dc850-3ee8-440c-92bb-185bb6f0e4e2"
-	 serverName="Code Agent Weather MCP Server" serverVersion="1.0.0" >
-		<mcp:streamable-http-server-connection listenerConfig="HTTP_Listener_config" mcpEndpointPath="/mulecodeagent/mcp" >
-			<mcp:default-response-headers >
-				<mcp:default-response-header key="X-API-Version" value="1.0.0" />
-				<mcp:default-response-header key="X-Service-Type" value="mulecodeagent" />
-			</mcp:default-response-headers>
-		</mcp:streamable-http-server-connection>
-	</mcp:server-config>
-	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="241a83d1-574f-4e7a-ac46-65a273abc3d7" >
-		<http:listener-connection host="0.0.0.0" port="8090" />
-	</http:listener-config>
-	<http:request-config name="HTTP_Request_Claud_API" doc:name="HTTP Request configuration" doc:id="5edbbcd9-d978-4f33-8923-687d68aaae3e">
-		<http:request-connection protocol="HTTPS" host="api.anthropic.com" connectionIdleTimeout="500000">
-			<tls:context >
-				<tls:trust-store insecure="true" />
-			</tls:context>
-		</http:request-connection>
-	</http:request-config>
 	<!-- [STUDIO:"mule-code-agentFlow"]<flow name="mule-code-agentFlow" doc:id="730ac7c1-7230-4e82-bf79-1d4fc8fd46f0" >
 		<http:listener doc:name="Listener" doc:id="efe96b3f-ee71-4312-90ee-afb37d38bb4a" config-ref="HTTP_Listener_config1" path="/test"/>
 		<logger level="INFO" doc:name="Logger" doc:id="386e519a-4359-49ee-9321-6b786ef31bad" message="#[payload.prompt&#93;"/>
@@ -62,17 +39,17 @@ read(payload.^raw, "application/yaml")
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="a166e622-27f4-4280-ae1c-8993ce596454" message='#[payload&#93;'/>
 	</flow> [STUDIO] -->
-	<sub-flow name="mule-code-agentSub_Flow" doc:id="eddc9bec-f4d1-4577-b1f9-7bae52e3f8c0" >
+	<!-- [STUDIO:"mule-code-agentSub_Flow"]<sub-flow name="mule-code-agentSub_Flow" doc:id="eddc9bec-f4d1-4577-b1f9-7bae52e3f8c0" >
 		<http:request method="POST" doc:name="Request" doc:id="d4f37316-e4b1-470e-b49f-df137eeba3a0" config-ref="HTTP_Request_Claud_API" path="/v1/messages" responseTimeout="500000">
 			<http:headers><![CDATA[#[{
 "x-api-key": "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",
 "anthropic-version":"2023-06-01" 
 //"content-type":"application/json"
-}]]]></http:headers>
+}&#93;&#93;&#93;></http:headers>
 		</http:request>
-	</sub-flow>
-	<flow name="generat-raml-spec" doc:id="17e30a04-2cef-4eb6-a4bd-334f11144b31" >
-		<mcp:tool-listener doc:name="create_api_spec" doc:id="2d871819-8308-421a-88cf-c7e85a41d609" config-ref="Cod_eAgent_MCP_Server" name="create_api_spec">
+	</sub-flow> [STUDIO] -->
+	<flow name="generate-raml-specification-agentflow" doc:id="17e30a04-2cef-4eb6-a4bd-334f11144b31" >
+		<mcp:tool-listener doc:name="create_api_spec" doc:id="2d871819-8308-421a-88cf-c7e85a41d609" name="create_api_spec" config-ref="Cod_eAgent_MCP_Server">
 			<mcp:description ><![CDATA[Uses AI to generate a RAML or OAS API specification from a natural language prompt.]]></mcp:description>
 			<mcp:parameters-schema ><![CDATA[{
     "type": "object",
@@ -97,8 +74,8 @@ read(payload.^raw, "application/yaml")
 				<mcp:text-tool-response-content text="#[payload.^raw]" />
 			</mcp:responses>
 		</mcp:tool-listener>
-		<logger level="INFO" doc:name="Logger" doc:id="82b7fd73-cbaa-4ce5-8a60-17c54c4849f8" message="#[payload]"/>
-		<ee:transform doc:name="Transform Message" doc:id="1f665f20-c335-4d25-a48b-95121e7d1950" >
+		<logger level="INFO" doc:name="raml Start Logger" doc:id="82b7fd73-cbaa-4ce5-8a60-17c54c4849f8" message="#[payload]"/>
+		<ee:transform doc:name="RAML Txn Message" doc:id="1f665f20-c335-4d25-a48b-95121e7d1950" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output applicaion/json
@@ -115,11 +92,148 @@ output applicaion/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="claud API" doc:id="392d898b-5807-47e4-9686-ca10d8098571" name="mule-code-agentSub_Flow"/>
-		<logger level="INFO" doc:name="Logger" doc:id="05c0d337-eeec-465a-b55b-243b0e6ea6f5" message="#[payload]"/>
-		<!-- [STUDIO:"Flow Reference"]<flow-ref doc:name="Flow Reference" doc:id="f052a1f0-78f9-4da1-9c8e-d5fcd2608349" name="mule-code-agentSub_Flow"/> [STUDIO] -->
+		<flow-ref doc:name="Claude API" doc:id="392d898b-5807-47e4-9686-ca10d8098571" name="mule-code-agentSub_Flow"/>
+		<logger level="INFO" doc:name="raml End Logger" doc:id="05c0d337-eeec-465a-b55b-243b0e6ea6f5" message="#[payload]"/>
 	</flow>
-	<!-- [STUDIO:"mule-code-agentFlow1"]<flow name="mule-code-agentFlow1" doc:id="0e8ee091-026d-412c-a923-b8e6784e4726" >
-		<mcp:tool-listener doc:name="MCP Server - Tool Listener" doc:id="01dd8ab5-64e3-4679-8f18-d456401b322a" config-ref="Cod_eAgent_MCP_Server" name="data"/>
-	</flow> [STUDIO] -->
+	<flow name="generate-dataweave-agentflow" doc:id="ddc506c5-5cf7-4dbe-bfc0-e0e72e770f13" >
+		<mcp:tool-listener doc:name="create_dw_codeagent" doc:id="ec7596e2-9fd2-4e3f-8bcb-6072254278ff" name="create_dw_codeagent" config-ref="Cod_eAgent_MCP_Server">
+			<mcp:description ><![CDATA[Uses AI to generate a DW or DWL or Dataweave (version - %dw 2.0) from a natural language prompt.]]></mcp:description>
+			<mcp:parameters-schema ><![CDATA[{
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "Detailed description of the API endpoints, methods, parameters, and responses."
+      },
+      "language": {
+        "type": "string",
+        "enum": ["RAML 1.0", "OAS 3.0 (YAML)", "OAS 3.0 (JSON)"],
+        "default": "RAML 1.0"
+      },
+      "title": {
+        "type": "string",
+        "description": "The title of the API"
+      }
+    },
+    "required": ["prompt", "title"]
+  }]]></mcp:parameters-schema>
+			<mcp:responses >
+				<mcp:text-tool-response-content text="#[payload.^raw]" />
+			</mcp:responses>
+		</mcp:tool-listener>
+		<logger level="INFO" doc:name="dw Start Logger" doc:id="6fcc5b9c-ae2b-4fe2-834f-d6bbc6024876" message="#[payload]" />
+		<ee:transform doc:name="dw Txn Message" doc:id="7eb46e4b-82af-4177-b8ce-f92e4b3421cd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output applicaion/json
+---
+{
+   model:"claude-sonnet-5",
+   max_tokens:4000,
+   messages:[
+      {
+        role:"user",
+        content:payload.prompt
+      }
+   ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Claude API" doc:id="454343f5-12f6-495b-ae20-fc770e42a496" name="mule-code-agentSub_Flow" />
+		<logger level="INFO" doc:name="dw End Logger" doc:id="4e262b35-00a9-4907-b88a-1cee0eb61bb0" message="#[payload]" />
+	</flow>
+	<flow name="generate-munit-agentflow" doc:id="c0189d89-ecbf-4f34-919e-7d01bcd5ca93" >
+		<mcp:tool-listener doc:name="create_munit_codeagent" doc:id="a48fef61-bcac-4317-871c-ad1f1ce43272" name="create_munit_codeagent" config-ref="Cod_eAgent_MCP_Server">
+			<mcp:description ><![CDATA[Uses AI to generate a Munit or munit MuleSoft/Mule application testing framework for testing MuleSoft applications from a natural language prompt.]]></mcp:description>
+			<mcp:parameters-schema ><![CDATA[{
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "Detailed description of the API endpoints, methods, parameters, and responses."
+      },
+      "language": {
+        "type": "string",
+        "enum": ["RAML 1.0", "OAS 3.0 (YAML)", "OAS 3.0 (JSON)"],
+        "default": "RAML 1.0"
+      },
+      "title": {
+        "type": "string",
+        "description": "The title of the API"
+      }
+    },
+    "required": ["prompt", "title"]
+  }]]></mcp:parameters-schema>
+			<mcp:responses >
+				<mcp:text-tool-response-content text="#[payload.^raw]" />
+			</mcp:responses>
+		</mcp:tool-listener>
+		<logger level="INFO" doc:name="munit Start Logger" doc:id="0878d02a-cf92-4959-a13b-715f92152cee" message="#[payload]" />
+		<ee:transform doc:name="munit Txn Message" doc:id="31b38781-28de-4425-a1a4-32aacd289609" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output applicaion/json
+---
+{
+   model:"claude-sonnet-5",
+   max_tokens:4000,
+   messages:[
+      {
+        role:"user",
+        content:payload.prompt
+      }
+   ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Claude API" doc:id="694dd953-6d8f-4ee4-a70a-9a572feae03f" name="mule-code-agentSub_Flow" />
+		<logger level="INFO" doc:name="munit End Logger" doc:id="9d82b369-8266-41ec-b7a1-fb64d6f5cbe5" message="#[payload]" />
+	</flow>
+	<flow name="generate-mulecode-agentflow" doc:id="5adc31c8-5b77-40b2-8bfb-58cde3972d57" >
+		<mcp:tool-listener doc:name="create_mule_codeagent" doc:id="36c77d1c-ca87-4cc0-a0fb-41b261df4b86" name="create_mule_codeagent" config-ref="Cod_eAgent_MCP_Server">
+			<mcp:description ><![CDATA[Uses AI to generate a MuleSoft/Mule application xml flow / subflow for MuleSoft applications from a natural language prompt.]]></mcp:description>
+			<mcp:parameters-schema ><![CDATA[{
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "Detailed description of the API endpoints, methods, parameters, and responses."
+      },
+      "language": {
+        "type": "string",
+        "enum": ["RAML 1.0", "OAS 3.0 (YAML)", "OAS 3.0 (JSON)"],
+        "default": "RAML 1.0"
+      },
+      "title": {
+        "type": "string",
+        "description": "The title of the API"
+      }
+    },
+    "required": ["prompt", "title"]
+  }]]></mcp:parameters-schema>
+			<mcp:responses >
+				<mcp:text-tool-response-content text="#[payload.^raw]" />
+			</mcp:responses>
+		</mcp:tool-listener>
+		<logger level="INFO" doc:name="muleCode Start Logger" doc:id="2481349f-4a49-44aa-b599-2dfe960d4676" message="#[payload]" />
+		<ee:transform doc:name="mule Txn Message" doc:id="ced61366-fe94-4348-9d8f-3f80645a6f7d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output applicaion/json
+---
+{
+   model:"claude-sonnet-5",
+   max_tokens:4000,
+   messages:[
+      {
+        role:"user",
+        content:payload.prompt
+      }
+   ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Claude API" doc:id="3c5d260d-a59b-442e-acc6-8f13b0ca3649" name="mule-code-agentSub_Flow" />
+		<logger level="INFO" doc:name="muleCode End Logger" doc:id="526fc260-0c91-4c3f-bfad-a20490ff21fd" message="#[payload]" />
+	</flow>
 </mule>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:mcp="http://www.mulesoft.org/schema/mule/mcp" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/mcp http://www.mulesoft.org/schema/mule/mcp/current/mule-mcp.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d446b273-32a3-4124-b5a5-14425babd9f6" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="d9dcecf4-09d9-4896-bafc-976e4b459ebd" >
+		<http:listener-connection host="0.0.0.0" port="8090" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_Claud_API" doc:name="HTTP Request configuration" doc:id="d25e8165-db6e-401c-a76f-b1b43cc1af4a" >
+		<http:request-connection host="api.anthropic.com" connectionIdleTimeout="500000" protocol="HTTPS">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+	<mcp:server-config name="Cod_eAgent_MCP_Server" doc:name="MCP Server" doc:id="03687b62-8bea-48fc-bf31-ec9ef7c27038" serverName="Code Agent Weather MCP Server" serverVersion="1.0.0" >
+		<mcp:streamable-http-server-connection listenerConfig="HTTP_Listener_config" mcpEndpointPath="/mulecodeagent/mcp" >
+			<mcp:default-response-headers >
+				<mcp:default-response-header key="X-API-Version" value="1.0.0" />
+				<mcp:default-response-header key="X-Service-Type" value="mulecodeagent" />
+			</mcp:default-response-headers>
+		</mcp:streamable-http-server-connection>
+	</mcp:server-config>
+</mule>
